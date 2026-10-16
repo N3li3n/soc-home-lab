@@ -1,20 +1,25 @@
 # Архитектура лаборатории
 
 ## Схема сети
-┌─────────────────┐ ┌─────────────────┐
-│ Kali Linux      │ │  Windows 11     │
-│ (Атакующий)     │ │   (Жертва)      │
-│ 192.168.206.216 │ │ 192.168.202.20  │
-└─────────────────┘ └─────────────────┘
-│ │ 
-│ ┌───────────────────────┐
-│ │        Ubuntu (Wazuh) │
-│          192.168.201.19 │
-│ Wazuh Manager           │
-│ Wazuh Indexer           │
-│ Wazuh Dashboard         │
-└─────────────────────────┘
 
+```mermaid
+graph TB
+    subgraph LAB["SOC Home Lab"]
+        Kali["🔴 Kali Linux<br/>Атакующий<br/>192.168.206.216"]
+        Win11["🪟 Windows 11<br/>Жертва<br/>192.168.202.20"]
+        Wazuh["🛡️ Ubuntu (Wazuh)<br/>Wazuh Manager + Indexer + Dashboard<br/>192.168.201.19"]
+        SO["🧅 Ubuntu (Security Onion)<br/>Security Onion Standalone<br/>192.168.202.10"]
+    end
+    
+    Kali -->|"Атака<br/>SSH Brute Force"| Wazuh
+    Win11 -->|"Логи<br/>Sysmon + 4688 + 4104"| Wazuh
+    Win11 -.->|"Сетевой трафик"| SO
+    
+    style Kali fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    style Win11 fill:#4dabf7,stroke:#1864ab,color:#fff
+    style Wazuh fill:#51cf66,stroke:#2b8a3e,color:#fff
+    style SO fill:#ffd43b,stroke:#e67700,color:#000
+```
 
 
 ## Ресурсы VM

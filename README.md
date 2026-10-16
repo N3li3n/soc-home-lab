@@ -58,4 +58,4 @@
 
  Клонировать репозиторий:
    ```bash
-   git clone https://github.com/ваш-username/soc-home-lab.git
+   git clone https://github.com/N3li3n/soc-home-lab.git

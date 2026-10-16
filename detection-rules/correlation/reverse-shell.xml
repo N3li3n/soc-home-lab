@@ -1,0 +1,12 @@
+<group name="correlation,reverse_shell,">
+  <rule id="100703" level="12" frequency="2" timeframe="30">
+    <if_matched_sid>61605</if_matched_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\powershell\.exe$</field>
+    <same_field>win.eventdata.image</same_field>
+    <description>Correlation: Possible reverse shell — PowerShell + network connection</description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+    <group>correlation,reverse_shell,</group>
+  </rule>
+</group>

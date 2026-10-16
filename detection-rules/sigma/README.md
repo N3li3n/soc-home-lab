@@ -1,4 +1,4 @@
-# Sigma Rules (Неделя 2)
+# Sigma Rules 
 
 ## Что такое Sigma
 
@@ -17,7 +17,7 @@ Sigma — универсальный формат правил детектир�
 | `T1110-ssh-bruteforce.yml` | T1110 | ❌ | ✅ | `100600`, `100602` |
 | `T1059.001-powershell.yml` | T1059.001 | ✅ | ✅ | `100601` |
 
-## Lessons Learned
+
 
 - SigWaz генерирует ID `900000` — нужно **вручную** менять на уникальные.
 - `if_sid` для Sysmon Event ID 1 = `61603`, для Event ID 10 = `61609`.

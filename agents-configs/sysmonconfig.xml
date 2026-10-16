@@ -1,0 +1,25 @@
+<Sysmon schemaversion="4.90">
+<EventFiltering>
+<RuleGroup name="" groupRelation="or">
+<ProcessCreate onmatch="exclude"/>
+</RuleGroup>
+<RuleGroup name="" groupRelation="or">
+<ProcessAccess onmatch="include">
+<TargetImage condition="is">C:\Windows\System32\lsass.exe</TargetImage>
+</ProcessAccess>
+<ProcessAccess onmatch="exclude">
+<SourceImage condition="is">C:\Program Files\Elastic\Endpoint\elastic-endpoint.exe</SourceImage>
+<SourceImage condition="is">C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.26080.4-0\MsMpEng.exe</SourceImage>
+<SourceImage condition="is">C:\Windows\System32\svchost.exe</SourceImage>
+</ProcessAccess>
+</RuleGroup>
+<RuleGroup name="" groupRelation="or">
+<NetworkConnect onmatch="include">
+<Image condition="contains">powershell.exe</Image>
+</NetworkConnect>
+</RuleGroup>
+<RuleGroup name="" groupRelation="or">
+<CreateRemoteThread onmatch="include"/>
+</RuleGroup>
+</EventFiltering>
+</Sysmon>

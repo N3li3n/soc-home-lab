@@ -1,0 +1,26 @@
+name: Validate XML
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: Validate all XML files
+        run: |
+          find . -name "*.xml" -type f -print0 | while IFS= read -r -d '' file; do
+            echo "Validating: $file"
+            xmllint --noout "$file" || exit 1
+          done
+          echo "All XML files are valid!"

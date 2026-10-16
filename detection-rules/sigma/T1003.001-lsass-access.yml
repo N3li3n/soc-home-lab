@@ -1,0 +1,23 @@
+title: Mimikatz LSASS Access
+id: 12345678-1234-1234-1234-123456789012
+status: experimental
+description: Detects Mimikatz-style access to LSASS memory
+author: Skyline
+date: 2026/10/08
+logsource:
+    category: process_access
+    product: windows
+detection:
+    selection:
+        TargetImage|endswith: '\lsass.exe'
+        GrantedAccess|contains:
+            - '0x1010'
+            - '0x1410'
+            - '0x1438'
+    condition: selection
+falsepositives:
+    - Legitimate administrative tools
+level: critical
+tags:
+    - attack.credential_access
+    - attack.t1003.001

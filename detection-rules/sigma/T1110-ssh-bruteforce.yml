@@ -1,0 +1,19 @@
+title: SSH Failed Authentication
+id: 4765bfab-eddc-4264-91df-4406d5091711
+status: stable
+description: Detects a failed SSH login attempt (base rule for brute force correlation)
+author: Skyline
+date: 2026-10-09
+tags:
+    - attack.credential_access
+    - attack.t1110.001
+logsource:
+    product: linux
+    service: sshd
+detection:
+    selection:
+        srcip: "*"
+    condition: selection
+level: informational
+falsepositives:
+    - Users mistyping passwords

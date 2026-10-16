@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+sigma-venv/
+
+# Временные файлы
+*.tmp
+*.log
+*.bak
+
+# Screenshots 
+# docs/screenshots/*.png
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+*.key
+*.pem
+.env
+test-events/

@@ -1,0 +1,222 @@
+<group name="local,">
+<rule id="100100" level="10" frequency="5" timeframe="120">
+    <if_matched_sid>5710</if_matched_sid>
+    <description>SSH brute force detected (custom rule)</description>
+    <group>attack_bruteforce,</group>
+  </rule>
+
+  <rule id="100101" level="12">
+    <if_sid>100100</if_sid>
+    <description>SSH brute force - HIGH PRIORITY alert</description>
+    <group>attack_bruteforce,</group>
+  </rule>
+
+    <rule id="100500" level="15">
+        <!-- Author: Skyline -->
+        <!-- Description: Detects Mimikatz-style access to LSASS memory -->
+        <!-- Date: 2026/10/08 -->
+        <!-- Status: experimental -->
+        <!-- Sigma ID: 12345678-1234-1234-1234-123456789012 -->
+        <if_matched_sid>92900</if_matched_sid>
+        <field name="win.eventdata.sourceImage" type="pcre2" negate="yes">(?i)(?:\\|\/)(MsMpEng|elastic-endpoint|svchost|csrss)\.exe$</field>
+        <field name="win.eventdata.grantedAccess" type="pcre2">(?i)0x1010|0x1410|0x1438</field>
+        <description>Mimikatz-style LSASS access by $(win.eventdata.sourceImage)</description>
+        <options>no_full_log</options>
+        <group>windows,process_access,</group>
+        <mitre>
+            <id>T1003.001</id>
+        </mitre>
+    </rule>
+
+    <rule id="100501" level="15">
+        <if_matched_sid>92900</if_matched_sid>
+        <field name="win.eventdata.sourceImage" type="pcre2">(?i)(?:\\|\/)(mimikatz|procdump|rundll32|powershell|pwsh|wmic|taskmgr|procexp)\.exe$</field>
+        <description>Known credential-dumping tool $(win.eventdata.sourceImage) accessed LSASS</description>
+        <options>no_full_log</options>
+        <group>windows,process_access,</group>
+        <mitre>
+            <id>T1003.001</id>
+    </mitre>
+ </rule>
+
+  <rule id="100600" level="5">
+    <if_sid>5700, 5710, 5711, 5712, 5713, 5714, 5715, 5716</if_sid>
+    <field name="full_log" type="pcre2">(?i).+</field>
+    <description>Sigma: SSH Failed Authentication</description>
+    <options>no_full_log</options>
+    <group>linux,sshd,</group>
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="100602" level="12" frequency="5" timeframe="120">
+    <if_matched_sid>100600</if_matched_sid>
+    <description>Sigma: SSH Brute Force detected (5+ failed logins in 120s)</description>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+    <group>sigma,attack_bruteforce,</group>
+  </rule>
+
+<!-- Sigma: Suspicious PowerShell Execution -->
+  <rule id="100601" level="12">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)(?:\\|\/)powershell\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)-enc|-EncodedCommand|FromBase64String|DownloadString|IEX</field>
+    <description>Sigma: Suspicious PowerShell Execution (T1059.001)</description>
+    <options>no_full_log</options>
+    <group>windows,process_creation,</group>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+  </rule>
+
+  <!-- Шаг 1: 10 failed logins за 5 минут -->
+  <rule id="100700" level="10" frequency="5" timeframe="300">
+    <if_matched_sid>60122</if_matched_sid>
+    <same_field>win.eventdata.targetUserName</same_field>
+    <description>Correlation: 10+ failed logins for same user in 5 minutes</description>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+    <group>correlation,attack_bruteforce,</group>
+  </rule>
+
+  <!-- Шаг 2: После 100700 — successful login -->
+  <rule id="100701" level="14">
+    <if_sid>60106</if_sid>
+    <if_matched_sid>100700</if_matched_sid>
+    <same_field>win.eventdata.targetUserName</same_field>
+    <description>CONFIRMED: Successful brute force — failed logins followed by success</description>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+    <group>correlation,attack_bruteforce,</group>
+  </rule>
+
+ <rule id="100702" level="10" frequency="3" timeframe="120">
+  <if_matched_sid>92031</if_matched_sid>
+  <same_field>win.eventdata.user</same_field>
+  <description>Correlation: Recon chain detected — 3+ discovery commands in 2 minutes</description>
+  <mitre>
+    <id>T1087</id>
+  </mitre>
+  <group>correlation,recon,</group>
+ </rule>
+
+ <rule id="100703" level="12" frequency="2" timeframe="30">
+  <if_matched_sid>61605</if_matched_sid>
+  <field name="win.eventdata.image" type="pcre2">(?i)\\powershell\.exe$</field>
+  <same_field>win.eventdata.image</same_field>
+  <description>Correlation: Possible reverse shell — PowerShell + network connection</description>
+  <mitre>
+    <id>T1059.001</id>
+  </mitre>
+  <group>correlation,reverse_shell,</group>
+</rule>
+
+<rule id="100710" level="12">
+  <if_sid>67027</if_sid>
+  <field name="win.eventdata.newProcessName" type="pcre2">(?i)procdump(64)?\.exe$</field>
+  <description>Behavioral: ProcDump execution detected (EID 4688)</description>
+  <mitre>
+    <id>T1003.001</id>
+  </mitre>
+  <group>behavioral,credential_access,</group>
+</rule>
+
+<rule id="100720" level="13">
+  <if_sid>67027</if_sid>
+  <field name="win.eventdata.newProcessName" type="pcre2">(?i)(mimikatz|procdump|rundll32|powershell|pwsh|wmic)\.exe$</field>
+  <field name="win.eventdata.processCommandLine" type="pcre2">(?i)(lsass|lsadump|sekurlsa|comsvcs|minidump)</field>
+  <description>Behavioral: Credential dumping tool execution detected (EID 4688)</description>
+  <mitre>
+    <id>T1003.001</id>
+  </mitre>
+  <group>behavioral,credential_access,</group>
+</rule>
+
+<rule id="100711" level="12">
+  <if_sid>67027</if_sid>
+  <field name="win.eventdata.newProcessName" type="pcre2">(?i)\\rundll32\.exe$</field>
+  <field name="win.eventdata.commandLine" type="pcre2">(?i)(comsvcs|MiniDump|lsass)</field>
+  <description>Behavioral: LSASS dump via rundll32 + comsvcs.dll (EID 4688)</description>
+  <mitre>
+    <id>T1003.001</id>
+  </mitre>
+  <group>behavioral,credential_access,</group>
+</rule>
+
+<rule id="100800" level="12">
+ <if_group>powershell</if_group>
+  <field name="win.eventdata.scriptBlockText" type="pcre2">(?i)AmsiUtils</field>
+  <description>CRITICAL: AMSI Bypass detected on $(win.system.computer)</description>
+  <mitre>
+    <id>T1562.001</id>
+  </mitre>
+  <group>behavioral,defense_evasion,</group>
+</rule>
+
+ <!-- ===================================================================
+       Правило 1: Обнаружение mshta.exe с JavaScript/VBScript схемой
+       Техника: T1218.005 - Signed Binary Proxy Execution: Mshta
+       =================================================================== -->
+  <rule id="100900" level="12">
+    <if_sid>61603</if_sid> <!-- Sysmon Event ID 1: Process Create -->
+    <field name="win.eventdata.image" type="pcre2">(?i)mshta\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)(javascript:|vbscript:)</field>
+    <description>LOLBin T1218.005: mshta.exe выполнен со скриптовой схемой - возможное выполнение вредоносного кода</description>
+    <mitre>
+      <id>T1218.005</id>
+      <id>T1059.007</id>
+    </mitre>
+    <group>attack.execution,attack.defense_evasion,lolbin,</group>
+  </rule>
+
+  <!-- ===================================================================
+       Правило 2: mshta.exe запущен с удаленным URL (HTA загрузка)
+       =================================================================== -->
+  <rule id="100901" level="12">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)mshta\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)(https?://|ftp://|\\\\)</field>
+    <description>LOLBin T1218.005: mshta.exe загружает удаленный HTA-файл</description>
+    <mitre>
+      <id>T1218.005</id>
+      <id>T1105</id>
+    </mitre>
+    <group>attack.execution,attack.command_and_control,lolbin,</group>
+  </rule>
+
+  <!-- ===================================================================
+       Правило 3: Подозрительный родительский процесс для mshta.exe
+       (PowerShell/CMD/Office запускает mshta)
+       =================================================================== -->
+  <rule id="100902" level="12">
+  <if_sid>67027</if_sid>
+  <field name="win.eventdata.newProcessName" type="pcre2">(?i)mshta\.exe$</field>
+  <field name="win.eventdata.parentProcessName" type="pcre2">(?i)(powershell|cmd|winword|excel|outlook|wscript|cscript)\.exe$</field>
+  <description>LOLBin T1218.005: mshta.exe запущен из подозрительного родительского процесса</description>
+  <mitre>
+    <id>T1218.005</id>
+    <id>T1204.002</id>
+  </mitre>
+  <group>attack.execution,attack.defense_evasion,lolbin,</group>
+</rule>
+
+  <!-- ===================================================================
+       Правило 4: Корреляция - множественные LOLBin события с одного хоста
+       =================================================================== -->
+  <rule id="100903" level="14" frequency="3" timeframe="120">
+    <if_matched_sid>100900</if_matched_sid>
+    <description>Корреляция: множественные попытки использования mshta.exe с одного хоста - активная атака</description>
+    <mitre>
+      <id>T1218.005</id>
+    </mitre>
+    <group>attack.execution,attack.defense_evasion,</group>
+  </rule>
+
+</group>
+
+

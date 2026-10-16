@@ -59,7 +59,6 @@
     <group>sigma,attack_bruteforce,</group>
   </rule>
 
-<!-- Sigma: Suspicious PowerShell Execution -->
   <rule id="100601" level="12">
     <if_sid>61603</if_sid>
     <field name="win.eventdata.image" type="pcre2">(?i)(?:\\|\/)powershell\.exe$</field>
@@ -72,7 +71,6 @@
     </mitre>
   </rule>
 
-  <!-- Шаг 1: 10 failed logins за 5 минут -->
   <rule id="100700" level="10" frequency="5" timeframe="300">
     <if_matched_sid>60122</if_matched_sid>
     <same_field>win.eventdata.targetUserName</same_field>
@@ -83,7 +81,6 @@
     <group>correlation,attack_bruteforce,</group>
   </rule>
 
-  <!-- Шаг 2: После 100700 — successful login -->
   <rule id="100701" level="14">
     <if_sid>60106</if_sid>
     <if_matched_sid>100700</if_matched_sid>
@@ -158,15 +155,11 @@
   <group>behavioral,defense_evasion,</group>
 </rule>
 
- <!-- ===================================================================
-       Правило 1: Обнаружение mshta.exe с JavaScript/VBScript схемой
-       Техника: T1218.005 - Signed Binary Proxy Execution: Mshta
-       =================================================================== -->
   <rule id="100900" level="12">
-    <if_sid>61603</if_sid> <!-- Sysmon Event ID 1: Process Create -->
+    <if_sid>61603</if_sid> 
     <field name="win.eventdata.image" type="pcre2">(?i)mshta\.exe$</field>
     <field name="win.eventdata.commandLine" type="pcre2">(?i)(javascript:|vbscript:)</field>
-    <description>LOLBin T1218.005: mshta.exe выполнен со скриптовой схемой - возможное выполнение вредоносного кода</description>
+    <description>LOLBin T1218.005: mshta.exe executed with a script scheme — possible execution of malicious code.</description>
     <mitre>
       <id>T1218.005</id>
       <id>T1059.007</id>
@@ -174,14 +167,11 @@
     <group>attack.execution,attack.defense_evasion,lolbin,</group>
   </rule>
 
-  <!-- ===================================================================
-       Правило 2: mshta.exe запущен с удаленным URL (HTA загрузка)
-       =================================================================== -->
   <rule id="100901" level="12">
     <if_sid>61603</if_sid>
     <field name="win.eventdata.image" type="pcre2">(?i)mshta\.exe$</field>
     <field name="win.eventdata.commandLine" type="pcre2">(?i)(https?://|ftp://|\\\\)</field>
-    <description>LOLBin T1218.005: mshta.exe загружает удаленный HTA-файл</description>
+    <description>LOLBin T1218.005: mshta.exe loads the remote HTA file</description>
     <mitre>
       <id>T1218.005</id>
       <id>T1105</id>
@@ -189,15 +179,11 @@
     <group>attack.execution,attack.command_and_control,lolbin,</group>
   </rule>
 
-  <!-- ===================================================================
-       Правило 3: Подозрительный родительский процесс для mshta.exe
-       (PowerShell/CMD/Office запускает mshta)
-       =================================================================== -->
   <rule id="100902" level="12">
   <if_sid>67027</if_sid>
   <field name="win.eventdata.newProcessName" type="pcre2">(?i)mshta\.exe$</field>
   <field name="win.eventdata.parentProcessName" type="pcre2">(?i)(powershell|cmd|winword|excel|outlook|wscript|cscript)\.exe$</field>
-  <description>LOLBin T1218.005: mshta.exe запущен из подозрительного родительского процесса</description>
+  <description>LOLBin T1218.005: mshta.exe was launched from a suspicious parent process.</description>
   <mitre>
     <id>T1218.005</id>
     <id>T1204.002</id>
@@ -205,12 +191,9 @@
   <group>attack.execution,attack.defense_evasion,lolbin,</group>
 </rule>
 
-  <!-- ===================================================================
-       Правило 4: Корреляция - множественные LOLBin события с одного хоста
-       =================================================================== -->
   <rule id="100903" level="14" frequency="3" timeframe="120">
     <if_matched_sid>100900</if_matched_sid>
-    <description>Корреляция: множественные попытки использования mshta.exe с одного хоста - активная атака</description>
+    <description>Correlation: multiple attempts to use mshta.exe from a single host indicate an active attack.</description>
     <mitre>
       <id>T1218.005</id>
     </mitre>

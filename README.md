@@ -1,4 +1,4 @@
-## 🎯 Цель
+##  Цель
 
 Собрать полноценный SOC-стенд для практики:
 - Развёртывание и настройка SIEM (Wazuh, Security Onion).
@@ -7,7 +7,7 @@
 - Threat hunting и Incident Response.
 - **Purple Team: поиск слепых зон и их закрытие.**
 
-## 🔥 Featured Case: Blind Spots (Purple Team Assessment)
+##  Featured Case: Blind Spots (Purple Team Assessment)
 
 Я запустил продвинутые атаки против своей же лаборатории — и **некоторые не детектировались**. Вот как я нашёл и закрыл слепые зоны:
 
@@ -20,7 +20,7 @@
 
 **Результат:** после фиксов все 4 атаки детектируются. [Полный разбор](./threat-hunting/blind-spots.md).
 
-## 🏗️ Архитектура
+##  Архитектура
 
 | VM | Роль | IP | ОС |
 |----|------|-----|-----|
@@ -29,7 +29,7 @@
 | Windows 11 | Жертва (домен evilcorp.local) | 192.168.202.20 | Windows 11 |
 | Ubuntu (Security Onion) | Security Onion Standalone | 192.168.202.10 | Security Onion 3.3.0 |
 
-## 📋 Сценарии
+##  Сценарии
 
 ### 1. SSH Brute Force (T1110)
 - **Атака:** Hydra с Kali на Ubuntu.
